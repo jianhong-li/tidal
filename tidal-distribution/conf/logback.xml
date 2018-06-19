@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<property name="LOG_HOME" value="${user.home}/logs/tidallogs" />
+	<property name="LOG_LEVEL" value="DEBUG" />
+
+	<appender name="stdout"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{56} @ %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="tidal-all"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${LOG_HOME}/tidal.log</File>
+		<append>true</append>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<FileNamePattern>${LOG_HOME}/tidal.%i.log
+			</FileNamePattern>
+			<minIndex>1</minIndex>
+			<maxIndex>20</maxIndex>
+		</rollingPolicy>
+		<triggeringPolicy
+			class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<maxFileSize>16MB</maxFileSize>
+		</triggeringPolicy>
+		<encoder>
+			<pattern>%date %-5level %logger{56} @%msg%n</pattern>
+			<charset class="java.nio.charset.Charset">UTF-8</charset>
+		</encoder>
+	</appender>
+
+	<root level="${LOG_LEVEL}">
+		<appender-ref ref="stdout" />
+		<appender-ref ref="tidal-all" />
+	</root>
+
+</configuration>
