@@ -5,7 +5,7 @@
 
 	<groupId>tidal</groupId>
 	<artifactId>tidal-all</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<packaging>pom</packaging>
 
 	<inceptionYear>2018</inceptionYear>
@@ -120,7 +120,7 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>tidal-logic</artifactId>
-				<version>${project.version}</version>
+				<version>1.0.0</version>
 			</dependency>
 			<!-- netty -->
 			<dependency>

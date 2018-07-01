@@ -29,7 +29,7 @@ public class TidalClientManager {
 		return SingletonHolder.INSTANCE;
 	}
 
-	public TidalClientInstance getAndCreateMQClientInstance(final AbstractTidalClient abstractTidalClient) {
+	public TidalClientInstance getAndCreateClientInstance(final AbstractTidalClient abstractTidalClient) {
 		String clientId = abstractTidalClient.buildClientId();
 		TidalClientInstance instance = this.factoryTable.get(clientId);
 		if (null == instance) {

@@ -95,6 +95,7 @@ public class TidalClientInstance {
 				break;
 			case RUNNING:
 				this.serviceState = ServiceState.SHUTDOWN_ALREADY;
+				this.stopScheduledTask();
 				this.tidalClientAPIImpl.shutdown();
 				TidalClientManager.getInstance().removeClientFactory(this.clientId);
 				log.info("the client factory [{}] shutdown OK", this.clientId);
@@ -166,6 +167,10 @@ public class TidalClientInstance {
 		} else {
 			log.warn("lock heartBeat, but failed.");
 		}
+	}
+
+	private void stopScheduledTask() {
+		this.scheduledExecutorService.shutdown();
 	}
 
 	public TidalClientAPIImpl getTidalClientAPIImpl() {

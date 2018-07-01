@@ -181,10 +181,6 @@ public class ServerStartup {
 		opt.setRequired(false);
 		options.addOption(opt);
 
-		opt = new Option("s", "shutdown", false, "shutdown Tidal Server");
-		opt.setRequired(false);
-		options.addOption(opt);
-
 		return options;
 	}
 }

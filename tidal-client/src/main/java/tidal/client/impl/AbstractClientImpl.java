@@ -20,7 +20,7 @@ public abstract class AbstractClientImpl {
 		case CREATE_JUST:
 			this.serviceState = ServiceState.START_FAILED;
 			this.tidalClientFactory = TidalClientManager.getInstance()
-					.getAndCreateMQClientInstance(this.abstractTidalClient);
+					.getAndCreateClientInstance(this.abstractTidalClient);
 
 			boolean registerOK = tidalClientFactory.registerClient(abstractTidalClient.getClientGroup(), this);
 			if (!registerOK) {
