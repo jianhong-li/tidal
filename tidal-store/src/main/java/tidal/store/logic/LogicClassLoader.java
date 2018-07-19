@@ -82,7 +82,7 @@ public class LogicClassLoader {
 	 * 
 	 * @param cls
 	 * @param lf
-	 * @param selfMagic
+	 * @param mySid
 	 * @param value
 	 * @return
 	 */
@@ -113,7 +113,7 @@ public class LogicClassLoader {
 	 * 
 	 * @param cls
 	 * @param lf
-	 * @param selfMagic
+	 * @param mySid
 	 * @param time
 	 * @param value
 	 * @return

@@ -5,7 +5,7 @@
 
 	<groupId>tidal</groupId>
 	<artifactId>tidal-all</artifactId>
-	<version>1.0.1</version>
+	<version>1.1.0</version>
 	<packaging>pom</packaging>
 
 	<inceptionYear>2018</inceptionYear>
@@ -126,7 +126,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-all</artifactId>
-				<version>4.1.25.Final</version>
+				<version>4.1.27.Final</version>
 			</dependency>
 			<!-- logback -->
 			<dependency>

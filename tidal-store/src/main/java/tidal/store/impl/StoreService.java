@@ -19,16 +19,12 @@ import tidal.store.DefaultTidalStore;
 import tidal.store.common.LoggerName;
 import tidal.store.config.StoreConfig;
 import tidal.store.logic.LogicClassLoader;
-import tidal.store.logic.LogicImpl;
 
 public class StoreService {
 
 	private static final Logger log = LoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
 	private final PhysicalFile physicalFile;
-	private StoreHeader storeHeader;
-	private StoreComponent storeComponent;
-	private LogicImpl logicImpl;
 
 	private Lock lock = new ReentrantLock();
 
@@ -37,7 +33,7 @@ public class StoreService {
 	}
 
 	public List<ComponentData> queryAllTopic() {
-		ConcurrentMap<String, Component> componentMap = storeComponent.getComponentMap();
+		ConcurrentMap<String, Component> componentMap = physicalFile.getStoreComponent().getComponentMap();
 		List<ComponentData> getAll = new ArrayList<ComponentData>(componentMap.size());
 		for (String topic : componentMap.keySet()) {
 			Component component = componentMap.get(topic);
@@ -63,13 +59,13 @@ public class StoreService {
 			if (physicalFile.isFull(Component.COMPONENT_HEADER_SIZE + topicLength + valueLength)) {
 				return ResponseCode.FLUSH_DISK_FULL;
 			}
-			if (storeComponent.isExistTopic(topic)) {
+			if (physicalFile.getStoreComponent().isExistTopic(topic)) {
 				return ResponseCode.TOPIC_EXISTED;
 			}
-			if (!storeComponent.isExistPloyType(ploy)) {
+			if (!physicalFile.getStoreComponent().isExistPloyType(ploy)) {
 				return ResponseCode.PLOY_NOT_SUPPORTED;
 			}
-			if (!storeComponent.checkInitValue(initValue)) {
+			if (!physicalFile.getStoreComponent().checkInitValue(initValue)) {
 				return ResponseCode.INIT_VALUE_INVALID;
 			}
 			if (!LogicClassLoader.isPresent(className)) {
@@ -92,10 +88,10 @@ public class StoreService {
 			component.setTopic(topic);
 			component.setClassName(className);
 
-			this.storeComponent.write(component);
-			this.storeComponent.addMap(component);
-			this.logicImpl.add(component);
-			this.storeHeader.setLastComponentOffset(position);
+			this.physicalFile.getStoreComponent().write(component);
+			this.physicalFile.getStoreComponent().addMap(component);
+			this.physicalFile.getLogicImpl().add(component);
+			this.physicalFile.getStoreHeader().setLastComponentOffset(position);
 			this.physicalFile.save();
 
 			log.info(this.getServiceName() + " ++> add topic: " + topic + ", ploy: " + ploy + ", initValue: "
@@ -111,32 +107,33 @@ public class StoreService {
 	}
 
 	public String updateComponent(String topic) {
-		if (!storeComponent.componentMapContainsKey(topic)) {
+		if (!physicalFile.getStoreComponent().componentMapContainsKey(topic)) {
 			log.warn("invalid topic: " + topic);
 			return emptyString();
 		}
 
-		Component component = storeComponent.getComponentMap().get(topic);
+		Component component = physicalFile.getStoreComponent().getComponentMap().get(topic);
 		component.getLock().lock();
 		try {
 
-			if (storeComponent.isReset(component)) {
-				this.storeComponent.reset(component);
+			if (physicalFile.getStoreComponent().isReset(component)) {
+				this.physicalFile.getStoreComponent().reset(component);
 			}
 			component.setUpdateTime(new Date().getTime());
 			component.incrCurrentValue();
 
-			this.storeComponent.update(component);
+			this.physicalFile.getStoreComponent().update(component);
 			this.physicalFile.save();
 			log.debug(this.getServiceName() + " ||^ update topic: " + topic + ", currentValue: "
 					+ component.getCurrentValue());
 
 			if (component.getPloy() == StoreComponent.INCREMENT_FIELD) {
-				return logicImpl.invoke(logicImpl.getLogicObject(topic), storeHeader.getMySid(),
-						component.getCurrentValue());
+				return physicalFile.getLogicImpl().invoke(physicalFile.getLogicImpl().getLogicObject(topic),
+						physicalFile.getStoreHeader().getMySid(), component.getCurrentValue());
 			} else {
-				return logicImpl.invoke(logicImpl.getLogicObject(topic), storeHeader.getMySid(),
-						component.getUpdateTime(), component.getCurrentValue());
+				return physicalFile.getLogicImpl().invoke(physicalFile.getLogicImpl().getLogicObject(topic),
+						physicalFile.getStoreHeader().getMySid(), component.getUpdateTime(),
+						component.getCurrentValue());
 			}
 		} catch (Exception e) {
 			log.error("update sequence error: ", e.getMessage());
@@ -149,13 +146,8 @@ public class StoreService {
 	public void start() throws Exception {
 		try {
 			log.info(this.getServiceName() + " load tidal store file start. -->>");
-			physicalFile.load();
+			this.physicalFile.load();
 			log.info(this.getServiceName() + " load tidal store file end. <<--");
-
-			this.storeHeader = physicalFile.getStoreHeader();
-			this.storeComponent = physicalFile.getStoreComponent();
-			this.logicImpl = physicalFile.getLogicImpl();
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -170,35 +162,35 @@ public class StoreService {
 	}
 
 	public void setLastComponentOffset(int lastComponentOffset) {
-		this.storeHeader.setLastComponentOffset(lastComponentOffset);
+		this.physicalFile.getStoreHeader().setLastComponentOffset(lastComponentOffset);
 	}
 
 	public void setMySid(int mySid) {
-		this.storeHeader.setMySid(mySid);
+		this.physicalFile.getStoreHeader().setMySid(mySid);
 	}
 
 	public int getMySid() {
-		return storeHeader.getMySid();
+		return physicalFile.getStoreHeader().getMySid();
 	}
 
 	public void setBrotherSid(int brotherSid) {
-		this.storeHeader.setBrotherSid(brotherSid);
+		this.physicalFile.getStoreHeader().setBrotherSid(brotherSid);
 	}
 
 	public int getBrotherSid() {
-		return storeHeader.getBrotherSid();
+		return physicalFile.getStoreHeader().getBrotherSid();
 	}
 
 	public int getLastComponentOffset() {
-		return storeHeader.getLastComponentOffset();
+		return physicalFile.getStoreHeader().getLastComponentOffset();
 	}
 
 	public void setLastOffset(int remotingLength) {
-		storeComponent.setLastOffset(remotingLength);
+		physicalFile.getStoreComponent().setLastOffset(remotingLength);
 	}
 
 	public int getLastOffset() {
-		return storeComponent.getLastOffset();
+		return physicalFile.getStoreComponent().getLastOffset();
 	}
 
 	public MappedByteBuffer getMappedByteBuffer() {

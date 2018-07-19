@@ -61,7 +61,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 	private final Timer timer = new Timer("ClientHouseKeepingService", true);
 
 	private final AtomicReference<List<String>> remotingServerAddrList = new AtomicReference<List<String>>();
-	private final AtomicReference<String> namesrvAddrChoosed = new AtomicReference<String>();
+	private final AtomicReference<String> srvAddrChoosed = new AtomicReference<String>();
 	private final Lock lockRemotingServerChannel = new ReentrantLock();
 
 	private final ExecutorService publicExecutor;
@@ -300,7 +300,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 	}
 
 	private Channel getAndCreateRemotingserverChannel() throws InterruptedException {
-		String addr = this.namesrvAddrChoosed.get();
+		String addr = this.srvAddrChoosed.get();
 		if (addr != null) {
 			ChannelWrapper cw = this.channelTables.get(addr);
 			if (cw != null && cw.isOK()) {
@@ -311,7 +311,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 		final List<String> addrList = this.remotingServerAddrList.get();
 		if (this.lockRemotingServerChannel.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
 			try {
-				addr = this.namesrvAddrChoosed.get();
+				addr = this.srvAddrChoosed.get();
 				if (addr != null) {
 					ChannelWrapper cw = this.channelTables.get(addr);
 					if (cw != null && cw.isOK()) {
@@ -323,7 +323,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 					for (int i = 0; i < addrList.size(); i++) {
 						String newAddr = addrList.get(i);
 
-						this.namesrvAddrChoosed.set(newAddr);
+						this.srvAddrChoosed.set(newAddr);
 						log.info("new remoting server is chosen. OLD: {} , NEW: {}. remotingServerIndex = {}", addr,
 								newAddr, i);
 						Channel channelNew = this.createChannel(newAddr);
